@@ -1,0 +1,3 @@
+defmodule AiAgentAdvisor.Mailer do
+  use Swoosh.Mailer, otp_app: :ai_agent_advisor
+end
