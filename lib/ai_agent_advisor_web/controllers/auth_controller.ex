@@ -1,21 +1,28 @@
 defmodule AiAgentAdvisorWeb.AuthController do
   use AiAgentAdvisorWeb, :controller
+  alias AiAgentAdvisor.Accounts
 
   plug Ueberauth
 
-  # The route /auth/:provider (e.g., /auth/google) will call this action.
-  # Its job is to simply start the Ueberauth flow.
   def request(conn, _params) do
     render(conn, :index)
   end
 
-  # The callback route /auth/google/callback will end up here.
-  # The user's data from Google is in conn.assigns.ueberauth_auth
   def callback(%{assigns: %{ueberauth_auth: auth}} = conn, _params) do
-    IO.inspect(auth, label: "AUTH_CALLBACK_DATA")
+    case Accounts.find_or_create_from_oauth(auth) do
+      {:ok, user} ->
+        conn
+        |> put_flash(:info, "Logged in successfully!")
+        # This is how we log the user in
+        |> put_session(:user_id, user.id)
+        |> redirect(to: "/")
 
-    conn
-    |> put_flash(:info, "Logged in successfully!")
-    |> redirect(to: "/")
+      {:error, changeset} ->
+        IO.inspect(changeset, label: "CHANGESET ERROR")
+
+        conn
+        |> put_flash(:error, "There was an error logging you in.")
+        |> redirect(to: "/")
+    end
   end
 end
