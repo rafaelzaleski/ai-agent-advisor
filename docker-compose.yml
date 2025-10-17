@@ -10,7 +10,7 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_HOST=db
-      - POSTGRES_DB=ai_agent_dev
+      - POSTGRES_DB=ai_agent_advisor_dev
       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
       - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
     depends_on:
@@ -24,7 +24,7 @@ services:
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=ai_agent_dev
+      - POSTGRES_DB=ai_agent_advisor_dev
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
