@@ -18,6 +18,9 @@ defmodule AiAgentAdvisorWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :home
+
+    get "/auth/:provider", AuthController, :request, as: :auth_request
+    get "/auth/:provider/callback", AuthController, :callback
   end
 
   # Other scopes may use custom stacks.
