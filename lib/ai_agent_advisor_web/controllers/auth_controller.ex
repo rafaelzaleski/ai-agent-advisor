@@ -25,4 +25,14 @@ defmodule AiAgentAdvisorWeb.AuthController do
         |> redirect(to: "/")
     end
   end
+
+  @doc """
+  Logs the user out.
+  """
+  def logout(conn, _params) do
+    conn
+    |> put_flash(:info, "Logged out successfully.")
+    |> configure_session(drop: true) 
+    |> redirect(to: "/")
+  end
 end

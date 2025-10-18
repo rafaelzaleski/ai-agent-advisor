@@ -15,9 +15,11 @@ defmodule AiAgentAdvisorWeb.Router do
   end
 
   scope "/", AiAgentAdvisorWeb do
-    pipe_through :browser
+    pipe_through [:browser, AiAgentAdvisorWeb.AuthPlug]
 
     get "/", PageController, :home
+
+    delete "/logout", AuthController, :logout, as: :auth_logout
 
     get "/auth/:provider", AuthController, :request, as: :auth_request
     get "/auth/:provider/callback", AuthController, :callback
