@@ -78,7 +78,7 @@ defmodule AiAgentAdvisorWeb.ChatLive do
               <div class={"flex items-start gap-4 #{if message.role == :user, do: "justify-end"}"}>
                 <%= if message.role == :assistant do %>
                   <span class="flex-shrink-0 w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center text-white">
-                    <.icon name="hero-sparkles" style="solid" class="w-5 h-5" />
+                    <.icon name="hero-sparkles" class="w-5 h-5" />
                   </span>
                 <% end %>
 
@@ -112,7 +112,7 @@ defmodule AiAgentAdvisorWeb.ChatLive do
             class="inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
             disabled={@new_message == ""}
           >
-            <.icon name="hero-paper-airplane" style="solid" class="w-5 h-5" />
+            <.icon name="hero-paper-airplane" class="w-5 h-5" />
           </button>
         </form>
       </div>
