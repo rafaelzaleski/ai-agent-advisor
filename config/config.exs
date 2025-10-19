@@ -7,6 +7,12 @@
 # General application configuration
 import Config
 
+config :ai_agent_advisor, Oban,
+  engine: Oban.Engines.Basic,
+  notifier: Oban.Notifiers.Postgres,
+  queues: [default: 10],
+  repo: AiAgentAdvisor.Repo
+
 config :ai_agent_advisor,
   ecto_repos: [AiAgentAdvisor.Repo],
   generators: [timestamp_type: :utc_datetime]
@@ -76,7 +82,8 @@ config :ueberauth, Ueberauth,
       ]
     },
     hubspot: {
-      Ueberauth.Strategy.Hubspot, [
+      Ueberauth.Strategy.Hubspot,
+      [
         token_method: :post
       ]
     }
@@ -91,5 +98,13 @@ config :ueberauth_hubspot,
 
 config :ai_agent_advisor, AiAgentAdvisor.Vault,
   ciphers: [
-    default: {Cloak.Ciphers.AES.GCM, tag: "AES.GCM.V1", key: Base.decode64!(System.get_env("ENCRYPTION_KEY"))}
+    default:
+      {Cloak.Ciphers.AES.GCM,
+       tag: "AES.GCM.V1", key: Base.decode64!(System.get_env("ENCRYPTION_KEY"))}
   ]
+
+# Configure Oban
+config :ai_agent_advisor, Oban,
+  repo: AiAgentAdvisor.Repo,
+  plugins: [Oban.Plugins.Pruner],
+  queues: [default: 10]

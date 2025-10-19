@@ -1,4 +1,5 @@
 import Config
+config :ai_agent_advisor, Oban, testing: :manual
 
 # Configure your database
 #

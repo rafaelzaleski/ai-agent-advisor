@@ -69,7 +69,9 @@ defmodule AiAgentAdvisor.MixProject do
       {:ueberauth, "~> 0.10"},
       {:ueberauth_google, "~> 0.10"},
       {:ueberauth_hubspot, "~> 0.1.0"},
-      {:cloak_ecto, "~> 1.3"}
+      {:cloak_ecto, "~> 1.3"},
+      {:oban, "~> 2.20"},
+      {:igniter, "~> 0.5", only: [:dev]}
     ]
   end
 

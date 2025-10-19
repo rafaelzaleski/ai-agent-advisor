@@ -16,7 +16,8 @@ defmodule AiAgentAdvisor.Application do
       # {AiAgentAdvisor.Worker, arg},
       # Start to serve requests, typically the last entry
       AiAgentAdvisorWeb.Endpoint,
-      AiAgentAdvisor.Vault
+      AiAgentAdvisor.Vault,
+      {Oban, Application.fetch_env!(:ai_agent_advisor, Oban)}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
