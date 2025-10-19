@@ -74,5 +74,22 @@ config :ueberauth, Ueberauth,
         client_id: System.get_env("GOOGLE_CLIENT_ID"),
         client_secret: System.get_env("GOOGLE_CLIENT_SECRET")
       ]
+    },
+    hubspot: {
+      Ueberauth.Strategy.Hubspot, [
+        token_method: :post
+      ]
     }
+  ]
+
+config :ueberauth, Ueberauth.Strategy.Hubspot.OAuth,
+  client_id: System.get_env("HUBSPOT_CLIENT_ID"),
+  client_secret: System.get_env("HUBSPOT_CLIENT_SECRET")
+
+config :ueberauth_hubspot,
+  base_api_url: "https://api.hubapi.com"
+
+config :ai_agent_advisor, AiAgentAdvisor.Vault,
+  ciphers: [
+    default: {Cloak.Ciphers.AES.GCM, tag: "AES.GCM.V1", key: Base.decode64!(System.get_env("ENCRYPTION_KEY"))}
   ]

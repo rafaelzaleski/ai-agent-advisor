@@ -9,140 +9,57 @@ defmodule AiAgentAdvisor.Accounts do
   alias AiAgentAdvisor.Accounts.User
 
   @doc """
-  Returns the list of users.
-
-  ## Examples
-
-      iex> list_users()
-      [%User{}, ...]
-
+  Gets a single user by their ID.
   """
-  def list_users do
-    Repo.all(User)
+  def get_user(id) when is_binary(id) do
+    Repo.get(User, id)
   end
 
   @doc """
-  Gets a single user.
-
-  Raises `Ecto.NoResultsError` if the User does not exist.
-
-  ## Examples
-
-      iex> get_user!(123)
-      %User{}
-
-      iex> get_user!(456)
-      ** (Ecto.NoResultsError)
-
+  Gets a single user by a set of params.
   """
-  def get_user!(id), do: Repo.get!(User, id)
-
-  @doc """
-  Gets a single user by specific criteria.
-
-  Returns `nil` if the User does not exist.
-
-  ## Examples
-
-      iex> get_user_by(email: "foo@bar.com")
-      %User{}
-
-      iex> get_user_by(email: "unknown@bar.com")
-      nil
-
-  """
-  def get_user_by(clauses) when is_list(clauses) do
-    Repo.get_by(User, clauses)
+  def get_user_by(params) do
+    Repo.get_by(User, params)
   end
-
-  @doc """
-  Creates a user.
-
-  ## Examples
-
-      iex> create_user(%{field: value})
-      {:ok, %User{}}
-
-      iex> create_user(%{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def create_user(attrs \\ %{}) do
-    %User{}
-    |> User.changeset(attrs)
-    |> Repo.insert()
-  end
-
-  @doc """
-  Updates a user.
-
-  ## Examples
-
-      iex> update_user(user, %{field: new_value})
-      {:ok, %User{}}
-
-      iex> update_user(user, %{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def update_user(%User{} = user, attrs) do
-    user
-    |> User.changeset(attrs)
-    |> Repo.update()
-  end
-
-  @doc """
-  Deletes a user.
-
-  ## Examples
-
-      iex> delete_user(user)
-      {:ok, %User{}}
-
-      iex> delete_user(user)
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def delete_user(%User{} = user) do
-    Repo.delete(user)
-  end
-
-  @doc """
-  Returns an `%Ecto.Changeset{}` for tracking user changes.
-
-  ## Examples
-
-      iex> change_user(user)
-      %Ecto.Changeset{data: %User{}}
-
-  """
-  def change_user(%User{} = user, attrs \\ %{}) do
-    User.changeset(user, attrs)
-  end
-
-  # --- NOSSA FUNÇÃO DE LOGIN COMEÇA AQUI ---
 
   @doc """
   Finds a user by provider and provider_id, or creates one if they don't exist.
   """
   def find_or_create_from_oauth(auth) do
-    # Usamos a função que o Phoenix gerou para nós
-    user = get_user_by(
-      provider: Atom.to_string(auth.provider),
-      provider_id: auth.uid
-    )
+     case get_user(auth.uid) do
+      nil ->
+        # User doesn't exist, create a new one
+        %User{}
+        |> User.google_login_changeset(auth)
+        |> Repo.insert()
 
-    # Se o usuário não existir (for nil), crie um novo.
-    if user do
-      {:ok, user}
-    else
-      # Usamos a outra função que o Phoenix gerou
-      create_user(%{
-        email: auth.info.email,
-        name: auth.info.name,
-        provider: Atom.to_string(auth.provider),
-        provider_id: auth.uid
-      })
+      user ->
+        # User exists, update their tokens
+        user
+        |> User.google_login_changeset(auth)
+        |> Repo.update()
     end
+  end
+
+  @doc """
+  Updates an existing user with HubSpot credentials.
+  """
+  def link_hubspot_account(user, credentials) do
+    expires_at =
+      if credentials.expires_at do
+        credentials.expires_at
+        |> DateTime.from_unix!()
+        |> DateTime.to_naive()
+      else
+        nil
+      end
+
+    user
+    |> User.link_hubspot_changeset(%{
+      hubspot_access_token: credentials.token,
+      hubspot_refresh_token: credentials.refresh_token,
+      hubspot_token_expires_at: expires_at
+    })
+    |> Repo.update()
   end
 end

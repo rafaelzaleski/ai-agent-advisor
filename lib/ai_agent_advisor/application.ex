@@ -15,7 +15,8 @@ defmodule AiAgentAdvisor.Application do
       # Start a worker by calling: AiAgentAdvisor.Worker.start_link(arg)
       # {AiAgentAdvisor.Worker, arg},
       # Start to serve requests, typically the last entry
-      AiAgentAdvisorWeb.Endpoint
+      AiAgentAdvisorWeb.Endpoint,
+      AiAgentAdvisor.Vault
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
