@@ -41,6 +41,30 @@ defmodule AiAgentAdvisor.Accounts do
     end
   end
 
+  def update_google_tokens(%User{} = user, %OAuth2.AccessToken{} = token) do
+    changeset =
+      Ecto.Changeset.change(user, %{
+        google_access_token: token.access_token,
+        google_refresh_token: token.refresh_token || user.google_refresh_token,
+        google_token_expires_at:
+          DateTime.from_unix!(token.expires_at) |> DateTime.to_naive()
+      })
+
+    Repo.update(changeset)
+  end
+
+  def update_hubspot_tokens(%User{} = user, %OAuth2.AccessToken{} = token) do
+    changeset =
+      Ecto.Changeset.change(user, %{
+        hubspot_access_token: token.access_token,
+        hubspot_refresh_token: token.refresh_token || user.hubspot_refresh_token,
+        hubspot_token_expires_at:
+          DateTime.from_unix!(token.expires_at) |> DateTime.to_naive()
+      })
+
+    Repo.update(changeset)
+  end
+
   @doc """
   Updates an existing user with HubSpot credentials.
   """
