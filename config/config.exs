@@ -108,3 +108,5 @@ config :ai_agent_advisor, Oban,
   repo: AiAgentAdvisor.Repo,
   plugins: [Oban.Plugins.Pruner],
   queues: [default: 10]
+
+config :gemini_ex, api_key: System.get_env("GEMINI_API_KEY")

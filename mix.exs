@@ -72,7 +72,8 @@ defmodule AiAgentAdvisor.MixProject do
       {:cloak_ecto, "~> 1.3"},
       {:oban, "~> 2.20"},
       {:igniter, "~> 0.5", only: [:dev]},
-      {:pgvector, "~> 0.3.0"}
+      {:pgvector, "~> 0.3.0"},
+      {:gemini_ex, "~> 0.3"},
     ]
   end
 
