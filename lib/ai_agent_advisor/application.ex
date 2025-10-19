@@ -12,6 +12,7 @@ defmodule AiAgentAdvisor.Application do
       AiAgentAdvisor.Repo,
       {DNSCluster, query: Application.get_env(:ai_agent_advisor, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: AiAgentAdvisor.PubSub},
+      {Finch, name: AiAgentAdvisor.Finch},
       # Start a worker by calling: AiAgentAdvisor.Worker.start_link(arg)
       # {AiAgentAdvisor.Worker, arg},
       # Start to serve requests, typically the last entry
