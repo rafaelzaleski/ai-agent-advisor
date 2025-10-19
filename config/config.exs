@@ -110,3 +110,6 @@ config :ai_agent_advisor, Oban,
   queues: [default: 10]
 
 config :gemini_ex, api_key: System.get_env("GEMINI_API_KEY")
+
+config :ai_agent_advisor, AiAgentAdvisor.Repo,
+  types: AiAgentAdvisor.PostgrexTypes
