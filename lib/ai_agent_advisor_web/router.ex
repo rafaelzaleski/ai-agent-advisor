@@ -32,6 +32,7 @@ defmodule AiAgentAdvisorWeb.Router do
   scope "/", AiAgentAdvisorWeb do
     pipe_through [:browser, :require_auth]
 
+    live "/chat", ChatLive, :index
     live "/settings", SettingsLive, :index
   end
 
