@@ -1,17 +1,28 @@
+
+databases:
+  - name: ai-agent-advisor-db
+    plan: free
+    postgresMajorVersion: "16"
+
+# Defines the application services (web server and background worker).
 services:
   # The Phoenix Web Server
   - type: web
     name: ai-agent-advisor-web
-    env: elixir
+    runtime: elixir
     buildCommand: "./render-build.sh"
-    startCommand: "_build/prod/rel/ai_agent_advisor/bin/ai_agent_advisor start"
+    startCommand: "/app/bin/server"
+    healthCheckPath: /
     envVars:
       - key: DATABASE_URL
         fromDatabase:
           name: ai-agent-advisor-db
           property: connectionString
       - key: PHOENIX_HOST
-        sync: false
+        fromService:
+          type: web
+          name: ai-agent-advisor-web
+          property: hostport
       - key: SECRET_KEY_BASE
         generateValue: true
       - key: GEMINI_API_KEY
@@ -28,9 +39,9 @@ services:
   # The Oban Background Worker
   - type: worker
     name: ai-agent-advisor-worker
-    env: elixir
+    runtime: elixir
     buildCommand: "./render-build.sh"
-    startCommand: "_build/prod/rel/ai_agent_advisor/bin/ai_agent_advisor eval 'AiAgentAdvisor.Oban.start_and_wait()'"
+    startCommand: "/app/bin/worker"
     envVars:
       - key: DATABASE_URL
         fromDatabase:
@@ -48,16 +59,3 @@ services:
         sync: false
       - key: HUBSPOT_CLIENT_SECRET
         sync: false
-
-  # The PostgreSQL Database with pgvector
-  - type: postgres
-    name: ai-agent-advisor-db
-    postgresMajorVersion: 15
-    dockerImage: pgvector/pgvector:pg15
-    envVars:
-      - key: PGVECTOR_IMAGE
-        value: pgvector/pgvector:pg15
-
-databases:
-  - name: ai-agent-advisor-db
-    plan: free
