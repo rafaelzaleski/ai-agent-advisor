@@ -43,7 +43,7 @@ services:
     runtime: elixir
     buildCommand: "./render-build.sh"
     startCommand: "/app/bin/worker"
-    plan: free
+    plan: starter
     envVars:
       - key: DATABASE_URL
         fromDatabase:
