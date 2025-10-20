@@ -13,6 +13,7 @@ services:
     buildCommand: "./render-build.sh"
     startCommand: "/app/bin/server"
     healthCheckPath: /
+    plan: free
     envVars:
       - key: DATABASE_URL
         fromDatabase:
@@ -42,6 +43,7 @@ services:
     runtime: elixir
     buildCommand: "./render-build.sh"
     startCommand: "/app/bin/worker"
+    plan: free
     envVars:
       - key: DATABASE_URL
         fromDatabase:
