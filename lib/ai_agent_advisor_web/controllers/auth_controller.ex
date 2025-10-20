@@ -3,6 +3,7 @@ defmodule AiAgentAdvisorWeb.AuthController do
   plug Ueberauth
 
   alias AiAgentAdvisor.Accounts
+  alias AiAgentAdvisor.Ingestion.DataSyncWorker
 
   def callback(%{assigns: %{ueberauth_auth: auth}} = conn, _params) do
     case auth.provider do
@@ -31,14 +32,25 @@ defmodule AiAgentAdvisorWeb.AuthController do
 
   defp handle_google_login(conn, auth) do
     case Accounts.find_or_create_from_oauth(auth) do
-      {:ok, user} ->
+      {:ok, user, :created} ->
+        # This is a new user, trigger their first data sync
+        {:ok, _job} = DataSyncWorker.new(%{user_id: user.id}) |> Oban.insert()
+
         conn
         |> put_session(:user_id, user.id)
-        |> redirect(to: ~p"/")
+        |> put_flash(:info, "Welcome! Your accounts are now syncing.")
+        |> redirect(to: ~p"/chat")
 
-      {:error, _reason} ->
+      {:ok, user, :updated} ->
+        # Existing user logged in
         conn
-        |> put_flash(:error, "Could not authenticate with Google.")
+        |> put_session(:user_id, user.id)
+        |> put_flash(:info, "Welcome back!")
+        |> redirect(to: ~p"/chat")
+
+      {:error, _changeset} ->
+        conn
+        |> put_flash(:error, "Error signing in with Google.")
         |> redirect(to: ~p"/")
     end
   end
@@ -53,28 +65,18 @@ defmodule AiAgentAdvisorWeb.AuthController do
 
       user ->
         case Accounts.link_hubspot_account(user, auth.credentials) do
-          {:ok, _updated_user} ->
-            conn
-            |> put_flash(:info, "Successfully connected your HubSpot account!")
-            |> redirect(to: ~p"/")
+          {:ok, updated_user} ->
+            # HubSpot was successfully linked, trigger a data sync
+            {:ok, _job} = DataSyncWorker.new(%{user_id: updated_user.id}) |> Oban.insert()
 
-          {:error, changeset} ->
-            # 🐛 DEBUG STEP 1: Inspect the full changeset
-            IO.inspect(changeset, label: "HubSpot Link Error Changeset")
-
-            # 🐛 DEBUG STEP 2: Inspect specific errors (if you want simpler output)
-            IO.inspect(
-              Ecto.Changeset.traverse_errors(changeset, fn {msg, opts} ->
-                # This formats the error tuple into a human-readable string
-                Enum.reduce(opts, msg, fn {key, value}, acc ->
-                  String.replace(acc, "%{#{key}}", inspect(value))
-                end)
-              end),
-              label: "HubSpot Changeset Errors"
-            )
             conn
-            |> put_flash(:error, "Could not connect your HubSpot account.")
-            |> redirect(to: ~p"/")
+            |> put_flash(:info, "HubSpot account connected and your data is now syncing.")
+            |> redirect(to: ~p"/settings")
+
+          {:error, _changeset} ->
+            conn
+            |> put_flash(:error, "Error connecting HubSpot account.")
+            |> redirect(to: ~p"/settings")
         end
     end
   end
