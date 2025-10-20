@@ -1,0 +1,63 @@
+services:
+  # The Phoenix Web Server
+  - type: web
+    name: ai-agent-advisor-web
+    env: elixir
+    buildCommand: "./render-build.sh"
+    startCommand: "_build/prod/rel/ai_agent_advisor/bin/ai_agent_advisor start"
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: ai-agent-advisor-db
+          property: connectionString
+      - key: PHOENIX_HOST
+        sync: false
+      - key: SECRET_KEY_BASE
+        generateValue: true
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: HUBSPOT_CLIENT_ID
+        sync: false
+      - key: HUBSPOT_CLIENT_SECRET
+        sync: false
+
+  # The Oban Background Worker
+  - type: worker
+    name: ai-agent-advisor-worker
+    env: elixir
+    buildCommand: "./render-build.sh"
+    startCommand: "_build/prod/rel/ai_agent_advisor/bin/ai_agent_advisor eval 'AiAgentAdvisor.Oban.start_and_wait()'"
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: ai-agent-advisor-db
+          property: connectionString
+      - key: SECRET_KEY_BASE
+        generateValue: true
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: HUBSPOT_CLIENT_ID
+        sync: false
+      - key: HUBSPOT_CLIENT_SECRET
+        sync: false
+
+  # The PostgreSQL Database with pgvector
+  - type: postgres
+    name: ai-agent-advisor-db
+    postgresMajorVersion: 15
+    dockerImage: pgvector/pgvector:pg15
+    envVars:
+      - key: PGVECTOR_IMAGE
+        value: pgvector/pgvector:pg15
+
+databases:
+  - name: ai-agent-advisor-db
+    plan: free
