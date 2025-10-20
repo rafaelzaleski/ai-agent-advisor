@@ -1,10 +1,16 @@
 defmodule AiAgentAdvisorWeb.ChatLive do
   use AiAgentAdvisorWeb, :live_view
 
+  alias AiAgentAdvisor.Accounts
+  alias AiAgentAdvisor.Agent
+  import AiAgentAdvisorWeb.MarkdownHelper
+
   defstruct [:role, :content]
 
   @impl true
-  def mount(_params, _session, socket) do
+  def mount(_params, session, socket) do
+    user = Accounts.get_user(session["user_id"])
+
     messages = [
       %__MODULE__{
         role: :assistant,
@@ -14,6 +20,7 @@ defmodule AiAgentAdvisorWeb.ChatLive do
 
     socket =
       socket
+      |> assign(current_user: user) # Assign the user to the socket
       |> assign(messages: messages, new_message: "")
       |> assign(page_title: "AI Agent Chat")
 
@@ -31,25 +38,32 @@ defmodule AiAgentAdvisorWeb.ChatLive do
 
   def handle_event("send_message", %{"new_message" => new_message}, socket) do
     user_message = %__MODULE__{role: :user, content: new_message}
-
-    # Add the user's message to the list
-    messages = socket.assigns.messages ++ [user_message]
+    # We pass the *current* list of messages as the history
+    history = socket.assigns.messages
+    messages = history ++ [user_message]
     socket = assign(socket, messages: messages, new_message: "")
 
     parent_pid = self()
+    user = socket.assigns.current_user
 
     Task.start(fn ->
-      Process.sleep(1000)
-      ai_response = "This is a placeholder response to your message: '#{new_message}'"
-      send(self(), {:ai_response, ai_response})
+      # Pass the history to the agent
+      answer = Agent.ask(user, new_message, history)
+      send(parent_pid, {:ai_response, answer})
     end)
 
     {:noreply, socket}
   end
 
+  defp extract_text_from_agent_response({:ok, text}), do: text
+  defp extract_text_from_agent_response(text) when is_binary(text), do: text
+  defp extract_text_from_agent_response(_), do: "An unexpected error occurred in the agent's response."
+
   @impl true
   def handle_info({:ai_response, content}, socket) do
-    ai_message = %__MODULE__{role: :assistant, content: content}
+    # FIX: Safely extract the string content from the agent's response.
+    text_content = extract_text_from_agent_response(content)
+    ai_message = %__MODULE__{role: :assistant, content: text_content}
     messages = socket.assigns.messages ++ [ai_message]
     {:noreply, assign(socket, messages: messages)}
   end
@@ -82,12 +96,16 @@ defmodule AiAgentAdvisorWeb.ChatLive do
                   </span>
                 <% end %>
 
-                <div class={"max-w-lg p-3 rounded-lg #{
+                <div class={"max-w-lg p-3 rounded-lg prose dark:prose-invert #{
                   if message.role == :user,
                     do: "bg-indigo-600 text-white",
-                    else: "bg-white dark:bg-gray-700 dark:text-gray-200"
+                    else: "bg-white dark:bg-gray-700"
                   }"}>
-                  <p class="text-sm"><%= message.content %></p>
+                  <%= if message.role == :assistant do %>
+                    <%= to_html(message.content) %>
+                  <% else %>
+                    <p class="text-sm"><%= message.content %></p>
+                  <% end %>
                 </div>
               </div>
             <% end %>

@@ -75,6 +75,7 @@ defmodule AiAgentAdvisor.MixProject do
       {:pgvector, "~> 0.3.0"},
       {:gemini_ex, "~> 0.3"},
       {:finch, "~> 0.18"},
+      {:earmark, "~> 1.4"},
     ]
   end
 
