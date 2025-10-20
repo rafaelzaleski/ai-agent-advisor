@@ -32,12 +32,20 @@ defmodule AiAgentAdvisor.Accounts do
         %User{}
         |> User.google_login_changeset(auth)
         |> Repo.insert()
+        |> case do
+          {:ok, user} -> {:ok, user, :created}
+          {:error, changeset} -> {:error, changeset}
+        end
 
       user ->
         # User exists, update their tokens
         user
         |> User.google_login_changeset(auth)
         |> Repo.update()
+        |> case do
+          {:ok, user} -> {:ok, user, :updated}
+          {:error, changeset} -> {:error, changeset}
+        end
     end
   end
 
@@ -86,4 +94,12 @@ defmodule AiAgentAdvisor.Accounts do
     })
     |> Repo.update()
   end
+
+  @doc """
+  Returns a list of all user IDs.
+  """
+  def list_all_user_ids do
+    Repo.all(from u in User, select: u.id)
+  end
+
 end
