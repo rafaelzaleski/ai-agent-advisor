@@ -10,6 +10,7 @@ defmodule AiAgentAdvisor.Ingestion.Document do
     field :embedding, Vector
     field :source, :string
     field :source_id, :string
+    field :metadata, :map, default: %{}
 
     belongs_to :user, User, type: :string
 
@@ -19,7 +20,7 @@ defmodule AiAgentAdvisor.Ingestion.Document do
   @doc false
   def changeset(document, attrs) do
     document
-    |> cast(attrs, [:user_id, :content, :embedding, :source, :source_id])
+    |> cast(attrs, [:user_id, :content, :embedding, :source, :source_id, :metadata])
     |> validate_required([:user_id, :content, :embedding, :source])
   end
 end
