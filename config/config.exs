@@ -76,7 +76,8 @@ config :ueberauth, Ueberauth,
     google: {
       Ueberauth.Strategy.Google,
       [
-        scopes: ["email", "profile"],
+        access_type: "offline",
+        default_scope: "openid email profile https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/gmail.modify",
         client_id: System.get_env("GOOGLE_CLIENT_ID"),
         client_secret: System.get_env("GOOGLE_CLIENT_SECRET")
       ]
